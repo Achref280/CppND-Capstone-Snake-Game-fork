@@ -16,6 +16,14 @@ void Game::Run(Controller const &controller, Renderer &renderer,
   Uint32 frame_start;
   Uint32 frame_end;
   Uint32 frame_duration;
+  // enter user name:
+  std::cout << "Please enter your name: ";
+  std::string name;
+  std::getline(std::cin, name);
+  player_score = Score(name, 0);
+  player_score.update_score();
+  // Print the best score for the player
+  std::cout << "Welcome " << player_score.GetPlayerName() << "! Your best previous score is : " << player_score.GetBestScore() << "\n";
   int frame_count = 0;
   bool running = true;
 
@@ -48,6 +56,8 @@ void Game::Run(Controller const &controller, Renderer &renderer,
       SDL_Delay(target_frame_duration - frame_duration);
     }
   }
+  // Update the score
+  player_score.set_score(score);
 }
 
 void Game::PlaceFood() {
@@ -82,6 +92,3 @@ void Game::Update() {
     snake.speed += 0.02;
   }
 }
-
-int Game::GetScore() const { return score; }
-int Game::GetSize() const { return snake.size; }
