@@ -8,24 +8,27 @@
 #include "snake.h"
 #include "score.h"
 #include <string>
+#include <memory.h>
+#include <obstacle.h>
 
 class Game {
  public:
-  Game(std::size_t grid_width, std::size_t grid_height);
-  void Run(Controller const &controller, Renderer &renderer,
-           std::size_t target_frame_duration);
+  Game();
+  void Run(Controller const &controller, Renderer &renderer);
   int GetScore() const { return player_score.GetScore();}
   std::string GetPlayerName() const { return player_score.GetPlayerName(); } 
   bool NewRecord() const {
       return player_score.is_new_record();
   }
-  int GetSize() const { return snake.size; }
+  int GetSize() const { return snake->GetSize(); }
   int GetBestScore() const { return player_score.GetBestScore(); }
   void write_score_to_file() {
       player_score.write_score_to_file();
   }
  private:
-  Snake snake;
+  std::unique_ptr<Snake> snake;
+  std::unique_ptr<Snake> a_snake; // AI snake that will use A* algorithm to find the food
+  std::unique_ptr<Obstacle> obstacle; // Static obstacle that the player snake must avoid
   SDL_Point food;
 
   std::random_device dev;

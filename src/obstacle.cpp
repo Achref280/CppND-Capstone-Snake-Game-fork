@@ -1,8 +1,8 @@
-#include "snake.h"
+#include "obstacle.h"
 #include <cmath>
 #include <iostream>
 #include "config.h"
-void Snake::Update() {
+void Obstacle::Update() {
   SDL_Point prev_cell{
       static_cast<int>(head_x),
       static_cast<int>(
@@ -12,14 +12,14 @@ void Snake::Update() {
       static_cast<int>(head_x),
       static_cast<int>(head_y)};  // Capture the head's cell after updating.
 
-  // Update all of the body vector items if the snake head has moved to a new
+  // Update all of the body vector items if the Obstacle head has moved to a new
   // cell.
   if (current_cell.x != prev_cell.x || current_cell.y != prev_cell.y) {
     UpdateBody(current_cell, prev_cell);
   }
 }
 
-void Snake::UpdateHead() {
+void Obstacle::UpdateHead() {
   switch (direction) {
     case Block::Direction::kUp:
       head_y -= speed;
@@ -38,12 +38,12 @@ void Snake::UpdateHead() {
       break;
   }
 
-  // Wrap the Snake around to the beginning if going off of the screen.
+  // Wrap the Obstacle around to the beginning if going off of the screen.
   head_x = fmod(head_x + Config::kGridWidth, Config::kGridWidth);
   head_y = fmod(head_y + Config::kGridHeight, Config::kGridHeight);
 }
 
-void Snake::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cell) {
+void Obstacle::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cell) {
   // Add previous head location to vector
   body.push_back(prev_head_cell);
 
@@ -55,12 +55,10 @@ void Snake::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cell) 
     size++;
   }
 
-  // Check if the snake has died.
+  // Check if the Obstacle has died.
   for (auto const &item : body) {
     if (current_head_cell.x == item.x && current_head_cell.y == item.y) {
       alive = false;
     }
   }
 }
-
-void Snake::GrowBody() { growing = true; }
