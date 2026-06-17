@@ -5,7 +5,7 @@
 
 Game::Game()
     : snake(std::make_unique<Snake>(Config::kGridWidth/2.0, Config::kGridHeight/2.0)), // Initialize the player snake
-      obstacle(std::make_unique<Obstacle>(Config::kGridWidth/5.0, Config::kGridHeight/5.0)), // Initialize the AI snake
+      obstacle(std::make_unique<Obstacle>(Config::kGridWidth/5.0, Config::kGridHeight/5.0, Obstacle::Shape::kWolf)), // Initialize the AI snake
       engine(dev()),
       random_w(0, static_cast<int>(Config::kGridWidth - 1)),
       random_h(0, static_cast<int>(Config::kGridHeight - 1)) {
@@ -78,9 +78,9 @@ void Game::PlaceFood() {
 
 void Game::Update() {
   if (!snake->IsAlive()) return;
-
+  obstacle->Update();
   snake->Update();
-
+  
   int new_x = static_cast<int>(snake->GetHeadX());
   int new_y = static_cast<int>(snake->GetHeadY());
   // 1. Check if the snake hit the obstacle
