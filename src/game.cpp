@@ -68,7 +68,7 @@ void Game::PlaceFood() {
     y = random_h(engine);
     // Check that the location is not occupied by a snake item before placing
     // food.
-    if (!snake->SnakeCell(x, y)) {
+    if (!snake->BlockCell(x, y) && !obstacle->BlockCell(x, y)) {
       food.x = x;
       food.y = y;
       return;
@@ -83,7 +83,11 @@ void Game::Update() {
 
   int new_x = static_cast<int>(snake->GetHeadX());
   int new_y = static_cast<int>(snake->GetHeadY());
-
+  // 1. Check if the snake hit the obstacle
+  if (obstacle->BlockCell(new_x, new_y)) {
+    snake->SetAlive(false); // Mark player snake as dead
+    return;
+  }
   // Check if there's food over here
   if (food.x == new_x && food.y == new_y) {
     score++;

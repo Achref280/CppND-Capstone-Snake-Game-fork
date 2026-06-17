@@ -54,11 +54,4 @@ void Obstacle::UpdateBody(SDL_Point &current_head_cell, SDL_Point &prev_head_cel
     growing = false;
     size++;
   }
-
-  // Check if the Obstacle has died.
-  for (auto const &item : body) {
-    if (current_head_cell.x == item.x && current_head_cell.y == item.y) {
-      alive = false;
-    }
-  }
 }

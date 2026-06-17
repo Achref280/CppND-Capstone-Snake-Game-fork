@@ -26,9 +26,11 @@ class Game {
       player_score.write_score_to_file();
   }
  private:
+
+  std::unique_ptr<Obstacle> obstacle; // Static obstacle that the player snake must avoid
+
   std::unique_ptr<Snake> snake;
   std::unique_ptr<Snake> a_snake; // AI snake that will use A* algorithm to find the food
-  std::unique_ptr<Obstacle> obstacle; // Static obstacle that the player snake must avoid
   SDL_Point food;
 
   std::random_device dev;

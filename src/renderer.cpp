@@ -64,7 +64,13 @@ void Renderer::Render(Snake const &snake, SDL_Point const &food, Obstacle const 
     SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
   }
   SDL_RenderFillRect(sdl_renderer, &block);
-
+  // Render obstacle it shall be red
+  SDL_SetRenderDrawColor(sdl_renderer, 0xFF, 0x00, 0x00, 0xFF);
+  for (SDL_Point const &point : obstacle.GetBody()) {
+    block.x = point.x * block.w;
+    block.y = point.y * block.h;
+    SDL_RenderFillRect(sdl_renderer, &block);
+  }
   // Update Screen
   SDL_RenderPresent(sdl_renderer);
 }
