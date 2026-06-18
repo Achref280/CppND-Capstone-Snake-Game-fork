@@ -8,7 +8,7 @@
 class AIController {
  public:
   AIController() = default;
-  void MoveAISnake(Snake &ai_snake, const SDL_Point &food, const std::vector<std::vector<State>> &grid);
+  bool MoveAISnake(Snake &ai_snake, const SDL_Point &food, const std::vector<std::vector<State>> &grid);
 };
 
 #endif

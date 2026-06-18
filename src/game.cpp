@@ -86,8 +86,12 @@ void Game::Run(Controller const &controller, Renderer &renderer) {
     std::vector<std::vector<State>> dynamic_grid = CreateGrid();
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, *snake);
-    // Execute A* search using the freshly built layout and update AI snake's direction accordingly
-    ai_controller.MoveAISnake(*ai_snake, food, dynamic_grid);
+    // Execute A* search and evaluate result
+    if (!ai_controller.MoveAISnake(*ai_snake, food, dynamic_grid)) {
+      std::lock_guard<std::mutex> lock(console_mutex);
+      std::cout << "CRITICAL: No path found for AI Snake! Terminating program...\n";
+      break; // Exit the game loop
+    }
     Update();
 
     renderer.Render(*snake, food, *obstacle, *ai_snake); 
@@ -153,7 +157,7 @@ void Game::Update() {
   ai_update_task.wait();
   obstacle_update_task.wait();
  
-  // If Obstacle moved into the food, we need to place a new one before checking collisions
+   // If Obstacle moved into the food, we need to place a new one before checking collisions
   if (obstacle->BlockCell(food.x, food.y)) {
     PlaceFood();
   }  
@@ -162,12 +166,33 @@ void Game::Update() {
 
   int ai_new_x = static_cast<int>(ai_snake->GetHeadX());
   int ai_new_y = static_cast<int>(ai_snake->GetHeadY());
-  // Use the objects directly as asynchronous functors
-  auto player_hit_obstacle = std::async(std::ref(*obstacle), new_x, new_y);
+
+  // 1. Create a promise and get its associated future
+  std::promise<bool> player_hit_promise;
+  std::future<bool> player_hit_future = player_hit_promise.get_future();
+
+  // 2. Launch a thread, moving the promise into the lambda
+  std::thread player_hit_thread([&](std::promise<bool> p, int x, int y) {
+    bool is_hit = obstacle->BlockCell(x, y);
+    // SAFEGUARDED CONSOLE WRITE
+    if (is_hit) {
+      std::lock_guard<std::mutex> lock(console_mutex);
+      std::cout << "CRITICAL: Collision detected on background thread!\n";
+    }
+    p.set_value(is_hit); // Fulfill the promise!
+  }, std::move(player_hit_promise), new_x, new_y);
+
+  // Keep AI check as async for contrast/comparison
   auto ai_hit_obstacle = std::async(std::ref(*obstacle), ai_new_x, ai_new_y);
 
-  // 1. Check if the snake hit the obstacle
-  if (player_hit_obstacle.get()) {
+  // 3. Wait for the exact promise value using the future
+  bool hit_obstacle_result = player_hit_future.get();
+  
+  // Clean up the manual thread
+  player_hit_thread.join();
+
+  // Check if the snake hit the obstacle
+  if (hit_obstacle_result) {
     snake->SetAlive(false); // Mark player snake as dead
     return;
   }

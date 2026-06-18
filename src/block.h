@@ -12,6 +12,10 @@ class Block {
   Block(float x, float y) 
       : head_x(x), head_y(y), direction(Direction::kUp), speed(0.0f), size(1){}
   
+  Block(const Block &) = default;
+  Block &operator=(const Block &) = default;
+  Block(Block &&) = default;
+  Block &operator=(Block &&) = default;
   virtual ~Block() = default;
 
   // Behavioral methods containing default or abstract logic

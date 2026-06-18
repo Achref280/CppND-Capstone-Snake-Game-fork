@@ -1,7 +1,7 @@
 #include "ai_controller.h"
 #include "config.h"
 
-void AIController::MoveAISnake(Snake &ai_snake, const SDL_Point &food, const std::vector<std::vector<State>> &grid) {
+bool AIController::MoveAISnake(Snake &ai_snake, const SDL_Point &food, const std::vector<std::vector<State>> &grid) {
   int init[2] = {static_cast<int>(ai_snake.GetHeadX()), static_cast<int>(ai_snake.GetHeadY())};
   int goal[2] = {food.x, food.y};
 
@@ -26,8 +26,9 @@ void AIController::MoveAISnake(Snake &ai_snake, const SDL_Point &food, const std
       State neighbor_state = path[nx][ny];
       if (neighbor_state == State::kPath || neighbor_state == State::kFinish) {
         ai_snake.SetDirection(dirs[i]);
-        break;
+        return true; // Move direction set successfully
       }
     }
   }
+  return false; // No valid move found
 }

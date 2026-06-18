@@ -8,10 +8,11 @@
 #include "snake.h"
 #include "score.h"
 #include <string>
-#include <memory.h>
+#include <memory>
 #include <obstacle.h>
 #include "astar.h"
 #include "ai_controller.h"
+#include <mutex>
 
 class Game {
  public:
@@ -36,7 +37,8 @@ class Game {
   SDL_Point food;
   AIController ai_controller;
 
-
+  std::mutex console_mutex; // Mutex to safeguard console output
+  
   std::random_device dev;
   std::mt19937 engine;
   std::uniform_int_distribution<int> random_w;
