@@ -23,6 +23,8 @@ add_executable(SnakeGame
   src/score.cpp
   # Add your new source files here, for example:
   src/obstacle.cpp
+  src/astar.cpp
+  src/ai_controller.cpp
 )
 string(STRIP ${SDL2_LIBRARIES} SDL2_LIBRARIES)
 target_link_libraries(SnakeGame ${SDL2_LIBRARIES})

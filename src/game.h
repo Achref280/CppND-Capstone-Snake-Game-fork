@@ -10,6 +10,8 @@
 #include <string>
 #include <memory.h>
 #include <obstacle.h>
+#include "astar.h"
+#include "ai_controller.h"
 
 class Game {
  public:
@@ -30,8 +32,10 @@ class Game {
   std::unique_ptr<Obstacle> obstacle; // Static obstacle that the player snake must avoid
 
   std::unique_ptr<Snake> snake;
-  std::unique_ptr<Snake> a_snake; // AI snake that will use A* algorithm to find the food
+  std::unique_ptr<Snake> ai_snake; // AI snake that will use A* algorithm to find the food
   SDL_Point food;
+  AIController ai_controller;
+
 
   std::random_device dev;
   std::mt19937 engine;
@@ -39,10 +43,13 @@ class Game {
   std::uniform_int_distribution<int> random_h;
 
   int score{0};
+  int ai_score{0};
   Score player_score;
+  void HandleFoodCollision(Snake &eating_snake, Snake &other_snake, int &target_score, float eat_speed_inc, float other_speed_inc);
 
   void PlaceFood();
   void Update();
+  std::vector<std::vector<State>> CreateGrid() const; // Helper to create a grid representation of the current game state for A* pathfinding
 };
 
 #endif

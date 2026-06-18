@@ -30,7 +30,10 @@ class Block {
     }
     return false;
   }
-
+  // Functor conversion operator: Allows objects of type Block to act as callables
+  bool operator()(int x, int y) const {
+    return BlockCell(x, y);
+  }
   // Common Getters and Setters implemented in base class
   Direction GetDirection() const { return direction; }
   void SetDirection(Direction dir) { direction = dir; }

@@ -32,7 +32,7 @@ Renderer::~Renderer() {
   SDL_Quit();
 }
 
-void Renderer::Render(Snake const &snake, SDL_Point const &food, Obstacle const &obstacle) {
+void Renderer::Render(Snake const &snake, SDL_Point const &food, Obstacle const &obstacle, Snake const &ai_snake) {
   SDL_Rect block;
   block.w = Config::kScreenWidth / Config::kGridWidth;
   block.h = Config::kScreenHeight / Config::kGridHeight;
@@ -71,6 +71,20 @@ void Renderer::Render(Snake const &snake, SDL_Point const &food, Obstacle const 
     block.y = point.y * block.h;
     SDL_RenderFillRect(sdl_renderer, &block);
   }
+
+    // Render AI snake's body
+  SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0xFF, 0x00, 0xFF);
+  for (SDL_Point const &point : ai_snake.GetBody()) {
+    block.x = point.x * block.w;
+    block.y = point.y * block.h;
+    SDL_RenderFillRect(sdl_renderer, &block);
+  }
+  // Render AI snake's head
+  block.x = static_cast<int>(ai_snake.GetHeadX()) * block.w;
+  block.y = static_cast<int>(ai_snake.GetHeadY()) * block.h;
+  SDL_SetRenderDrawColor(sdl_renderer, 0x00, 0xFF, 0x00, 0xFF);
+  SDL_RenderFillRect(sdl_renderer, &block);
+  
   // Update Screen
   SDL_RenderPresent(sdl_renderer);
 }
