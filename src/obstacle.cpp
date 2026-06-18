@@ -35,6 +35,72 @@ void Obstacle::BuildShape(int x, int y, Shape shape) {
     case Shape::kWolf:
       BuildWolf(x, y);
       break;
+    case Shape::kPacman:
+      BuildPacman(x, y);
+      break;
+  }
+}
+
+void Obstacle::BuildPacman(int x, int y) {
+  static int animation_tick = 0;
+  animation_tick++;
+  
+  // Toggle mouth open/closed state every 15 frames
+  bool mouth_open = (animation_tick / 15) % 2 == 0;
+
+  std::vector<SDL_Point> offsets;
+
+  if (!mouth_open) {
+    // Closed Mouth: Full 5x5 rounded circle
+    offsets = {
+      {-1, -2}, {0, -2}, {1, -2},
+      {-2, -1}, {-1, -1}, {0, -1}, {1, -1}, {2, -1},
+      {-2, 0},  {-1, 0},  {0, 0},   {1, 0},  {2, 0},
+      {-2, 1},  {-1, 1},  {0, 1},   {1, 1},  {2, 1},
+      {-1, 2},  {0, 2},   {1, 2}
+    };
+  } else {
+    // Open Mouth: Carve mouth points away pointing in the movement direction
+    switch (direction) {
+      case Block::Direction::kRight:
+        offsets = {
+          {-1, -2}, {0, -2}, {1, -2},
+          {-2, -1}, {-1, -1}, {0, -1},
+          {-2, 0},  {-1, 0},
+          {-2, 1},  {-1, 1}, {0, 1},
+          {-1, 2},  {0, 2},  {1, 2}
+        };
+        break;
+      case Block::Direction::kLeft:
+        offsets = {
+          {-1, -2}, {0, -2}, {1, -2},
+                    {0, -1}, {1, -1}, {2, -1},
+                             {0, 0},  {1, 0}, {2, 0},
+                    {0, 1},  {1, 1},  {2, 1},
+          {-1, 2},  {0, 2},  {1, 2}
+        };
+        break;
+      case Block::Direction::kUp:
+        offsets = {
+          {-2, -1},                   {2, -1},
+          {-2, 0},  {-1, 0}, {0, 0},  {1, 0}, {2, 0},
+          {-2, 1},  {-1, 1}, {0, 1},  {1, 1}, {2, 1},
+          {-1, 2},  {0, 2},  {1, 2}
+        };
+        break;
+      case Block::Direction::kDown:
+        offsets = {
+          {-1, -2}, {0, -2}, {1, -2},
+          {-2, -1}, {-1, -1}, {0, -1}, {1, -1}, {2, -1},
+          {-2, 0},  {-1, 0},  {0, 0},   {1, 0},  {2, 0},
+          {-2, 1},                             {2, 1}
+        };
+        break;
+    }
+  }
+
+  for (auto const &offset : offsets) {
+    AddBodyPoint(x + offset.x, y + offset.y);
   }
 }
 
@@ -111,6 +177,19 @@ void Obstacle::Update() {
   BuildShape(static_cast<int>(head_x), static_cast<int>(head_y), current_shape);
 }
 void Obstacle::UpdateHead() {
+  static int step_timer = 0;
+  step_timer++;
+
+  // Every 80 steps, make obstacle randomly switch direction
+  if (step_timer > 80) {
+    step_timer = 0;
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 3);
+    
+    // Choose randomly from Up, Down, Left, Right
+    direction = static_cast<Block::Direction>(dis(gen));
+  }
   switch (direction) {
     case Block::Direction::kUp:    head_y -= speed; break;
     case Block::Direction::kDown:  head_y += speed; break;

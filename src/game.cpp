@@ -6,7 +6,7 @@
 
 Game::Game()
     : snake(std::make_unique<Snake>(Config::kGridWidth/2.0, Config::kGridHeight/2.0)), // Initialize the player snake
-      obstacle(std::make_unique<Obstacle>(Config::kGridWidth/5.0, Config::kGridHeight/5.0, Obstacle::Shape::kWolf)), // Initialize the AI snake
+      obstacle(std::make_unique<Obstacle>(Config::kGridWidth/5.0, Config::kGridHeight/5.0, Obstacle::Shape::kPacman)), // Initialize the AI snake
       ai_snake(std::make_unique<Snake>(Config::kGridWidth/2.0-3, Config::kGridHeight/2.0-3)), // Initialize the AI snake  
       engine(dev()),
       random_w(0, static_cast<int>(Config::kGridWidth - 1)),
@@ -27,7 +27,7 @@ std::vector<std::vector<State>> Game::CreateGrid() const {
       grid[item.x][item.y] = State::kObstacle;
     }
   }
-
+  /* 
   // 2. Mark Player Snake's head on the grid
   int snake_head_x = static_cast<int>(snake->GetHeadX());
   int snake_head_y = static_cast<int>(snake->GetHeadY());
@@ -44,7 +44,7 @@ std::vector<std::vector<State>> Game::CreateGrid() const {
       grid[item.x][item.y] = State::kObstacle;
     }
   }
-  
+  */
    // 4. Mark AI Snake's head on the grid
   int ai_snake_head_x = static_cast<int>(ai_snake->GetHeadX());
   int ai_snake_head_y = static_cast<int>(ai_snake->GetHeadY());
@@ -82,13 +82,14 @@ void Game::Run(Controller const &controller, Renderer &renderer) {
 
   while (running) {
     frame_start = SDL_GetTicks();
-      // 2. Generate the dynamic grid sequentially (Highly efficient, no locks needed)
+    // Generate the dynamic grid sequentially (Highly efficient, no locks needed)
     std::vector<std::vector<State>> dynamic_grid = CreateGrid();
     // Input, Update, Render - the main game loop.
     controller.HandleInput(running, *snake);
     // Execute A* search using the freshly built layout and update AI snake's direction accordingly
     ai_controller.MoveAISnake(*ai_snake, food, dynamic_grid);
     Update();
+
     renderer.Render(*snake, food, *obstacle, *ai_snake); 
 
     frame_end = SDL_GetTicks();
@@ -152,6 +153,10 @@ void Game::Update() {
   ai_update_task.wait();
   obstacle_update_task.wait();
  
+  // If Obstacle moved into the food, we need to place a new one before checking collisions
+  if (obstacle->BlockCell(food.x, food.y)) {
+    PlaceFood();
+  }  
   int new_x = static_cast<int>(snake->GetHeadX());
   int new_y = static_cast<int>(snake->GetHeadY());
 
@@ -160,7 +165,6 @@ void Game::Update() {
   // Use the objects directly as asynchronous functors
   auto player_hit_obstacle = std::async(std::ref(*obstacle), new_x, new_y);
   auto ai_hit_obstacle = std::async(std::ref(*obstacle), ai_new_x, ai_new_y);
-  auto ai_hit_player = std::async(std::ref(*snake), ai_new_x, ai_new_y);
 
   // 1. Check if the snake hit the obstacle
   if (player_hit_obstacle.get()) {
@@ -173,14 +177,11 @@ void Game::Update() {
     ai_snake->SetAlive(false); // Mark AI snake as dead
     return;
   }
-  // 3. Check if the AI snake hit the player snake
-  if (ai_hit_player.get()) {
-    ai_snake->SetAlive(false); // Mark AI snake as dead
-    return;
-  }
+
   // Handle food consumption for both snakes using the clean helper method
   HandleFoodCollision(*ai_snake, *snake, ai_score, 0.01f, 0.02f);
   HandleFoodCollision(*snake, *ai_snake, score, 0.02f, 0.02f);
+
 }
 void Game::HandleFoodCollision(Snake &eating_snake, Snake &other_snake, int &target_score, float eat_speed_inc, float other_speed_inc) {
   int head_x = static_cast<int>(eating_snake.GetHeadX());

@@ -2,7 +2,10 @@
 #define OBSTACLE_H
 
 #include "block.h"
-
+#include <cmath>
+#include <iostream>
+#include <random> // Added library for random movement
+#include "config.h"
 class Obstacle : public Block {
  public:
   // Constructor forwards coordinates to the base Block class constructor
@@ -12,7 +15,8 @@ class Obstacle : public Block {
       kCross,
       kGateway,
       kHollowFrame,
-      kWolf
+      kWolf,
+      kPacman
     };
   
     // Constructor accepts an optional default Shape selector
@@ -29,6 +33,7 @@ class Obstacle : public Block {
   void BuildHollowFrame(int x, int y);
   void BuildWolf(int x, int y);
   void AddBodyPoint(int x, int y); // Helper to handle boundary wrapping safely
+  void BuildPacman(int x, int y);
   Shape current_shape; // Keep track of the active shape
 
 
